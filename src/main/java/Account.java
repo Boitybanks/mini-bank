@@ -1,62 +1,63 @@
-public class Account{
+public class Account {
+    // Color codes
+    static final String RESET = "\u001B[0m";
+    static final String GREEN = "\u001B[32m";
+    static final String RED = "\u001B[31m";
+    static final String YELLOW = "\u001B[33m";
+    static final String CYAN = "\u001B[36m";
     String customerName;
     String customerID;
     int balance = 0;
     int previousTransaction = 0;
 
-    //constructor
-    Account(String customerName, String customerID){
+
+    Account(String customerName, String customerID) {
         this.customerName = customerName;
         this.customerID = customerID;
     }
 
-    // Deposit Method
-    void deposit(int amount){
-        if (amount > 0){
-            balance = balance + amount; // Balance update
-            previousTransaction = amount; // Marking this for prev transcation
-            System.out.println("Amount Deposited Successfully");
-            System.out.println(("New Balance is: " + balance));
-        } else{
-            System.out.println("Please enter amount greater than 0," + customerName);
+    void deposit(int amount) {
+        if (amount > 0) {
+            balance = balance + amount;
+            previousTransaction = amount;
+            System.out.println(GREEN + "Amount Deposited Successfully");
+            System.out.println(CYAN + "New Balance is: R" + balance);
+        } else {
+            System.out.println(RED + "Please enter amount greater than 0, " + customerName);
         }
+    }
 
-    // Withdraw method
-    void withdraw(int amount){
-            if (amount < balance){
-                if(amount > 0 ){
-                    balance = balance - amount;
-                    previousTransaction = -amount;
-                    System.out.println("Widrawal Successful!");
-                    System.out.println("New Balance is: " + "R" +balance);
-
-                } else{
-                    System.out.println("Please enter amount greater than 0");
-                } else{
-                    System.out.println("Insufficient Funds, cannot complete withdrawal");
-                }
-            }
-        }
-    // Getting previous transaction
-    void getPreviousTransaction(){
-            if(previousTransaction > 0){
-                System.out.println("Deposited: " + previousTransaction);
-
-            } else if(previousTransaction < 0){
-                System.out.println("Withdrawn: " + previousTransaction);
-
+    void withdraw(int amount) {
+        if (amount > 0) {
+            if (amount < balance) {
+                balance = balance - amount;
+                previousTransaction = -amount;
+                System.out.println(GREEN + "Withdrawal Successful!");
+                System.out.println(CYAN + "New Balance is: R" + balance);
             } else {
-                System.out.println("No Transaction Occurred");
+                System.out.println(RED + "Insufficient Funds, cannot complete withdrawal");
             }
-
+        } else {
+            System.out.println(YELLOW + "Please enter amount greater than 0");
         }
-     // Calculating the interest method
-     void calculateInterest(int years){
-            double interestRate = .0185; // constant rate
-            double newBalance = ( balance * interestRate* years) + balance; // Years is received as a parameter
-            System.out.println("The current interest rate is " + (100 * interestRate) + "%");
-            System.out.println("After " + years + "years, your balance will be: " + "R"+ newBalance );
+    }
 
+    void getPreviousTransaction() {
+        if (previousTransaction > 0) {
+            System.out.println(GREEN +"Deposited: R" + previousTransaction);
+        } else if (previousTransaction < 0) {
+            System.out.println(CYAN + "Withdrawn: R" + Math.abs(previousTransaction));
+        } else {
+            System.out.println(YELLOW + "No Transaction Occurred");
         }
+    }
+
+    void calculateInterest(int years) {
+        double interestRate = 0.0185;
+        double newBalance = (balance * interestRate * years) + balance;
+        double profit = newBalance - balance;
+        System.out.printf(CYAN + "The current interest rate is %.2f%%%n", (100 * interestRate));
+        System.out.printf(GREEN + "After %d years, your balance will be: R%.2f%n" + RESET, years, newBalance);
+        System.out.println(YELLOW + "After " + years + " the profit will be " + profit);
     }
 }
