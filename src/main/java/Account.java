@@ -1,63 +1,78 @@
-public class Account {
-    // Color codes
-    static final String RESET = "\u001B[0m";
-    static final String GREEN = "\u001B[32m";
-    static final String RED = "\u001B[31m";
-    static final String YELLOW = "\u001B[33m";
-    static final String CYAN = "\u001B[36m";
-    String customerName;
-    String customerID;
-    int balance = 0;
-    int previousTransaction = 0;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Represents a generic bank account.
+ * <p>
+ * This class holds everything every account has in common — a balance,
+ * an owner, and a transaction history. It deliberately does NOT decide
+ * how withdrawals work: that's left to subclasses (CheckingAccount,
+ * SavingsAccount), each of which enforces its own rules by overriding
+ * {@link #withdraw(double)}.
+ */
+public abstract class Account {
 
-    Account(String customerName, String customerID) {
-        this.customerName = customerName;
-        this.customerID = customerID;
+    private final String accountNumber;
+    private final String ownerName;
+    protected double balance;
+    private final List<Transaction> history = new ArrayList<>();
+
+    public Account(String accountNumber, String ownerName, double openingBalance) {
+        this.accountNumber = accountNumber;
+        this.ownerName = ownerName;
+        this.balance = openingBalance;
     }
 
-    void deposit(int amount) {
-        if (amount > 0) {
-            balance = balance + amount;
-            previousTransaction = amount;
-            System.out.println(GREEN + "Amount Deposited Successfully");
-            System.out.println(CYAN + "New Balance is: R" + balance);
-        } else {
-            System.out.println(RED + "Please enter amount greater than 0, " + customerName);
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public List<Transaction> getHistory() {
+        return history;
+    }
+
+    public Transaction getLastTransaction() {
+        if (history.isEmpty()) {
+            return null;
         }
+        return history.get(history.size() - 1);
     }
 
-    void withdraw(int amount) {
-        if (amount > 0) {
-            if (amount < balance) {
-                balance = balance - amount;
-                previousTransaction = -amount;
-                System.out.println(GREEN + "Withdrawal Successful!");
-                System.out.println(CYAN + "New Balance is: R" + balance);
-            } else {
-                System.out.println(RED + "Insufficient Funds, cannot complete withdrawal");
-            }
-        } else {
-            System.out.println(YELLOW + "Please enter amount greater than 0");
+    public void deposit(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Deposit amount must be positive.");
         }
+        balance += amount;
+        history.add(new Transaction(TransactionType.DEPOSIT, amount, balance));
     }
 
-    void getPreviousTransaction() {
-        if (previousTransaction > 0) {
-            System.out.println(GREEN +"Deposited: R" + previousTransaction);
-        } else if (previousTransaction < 0) {
-            System.out.println(CYAN + "Withdrawn: R" + Math.abs(previousTransaction));
-        } else {
-            System.out.println(YELLOW + "No Transaction Occurred");
-        }
+    /**
+     * Withdraws money from the account. Every account type implements this
+     * differently — a CheckingAccount allows dipping into an overdraft,
+     * a SavingsAccount never lets the balance go below zero.
+     */
+    public abstract void withdraw(double amount) throws InsufficientFundsException;
+
+    /**
+     * Helper for subclasses: applies the withdrawal and logs it, once the
+     * subclass has already decided the withdrawal is allowed.
+     */
+    protected void recordWithdrawal(double amount) {
+        balance -= amount;
+        history.add(new Transaction(TransactionType.WITHDRAWAL, amount, balance));
     }
 
-    void calculateInterest(int years) {
-        double interestRate = 0.0185;
-        double newBalance = (balance * interestRate * years) + balance;
-        double profit = newBalance - balance;
-        System.out.printf(CYAN + "The current interest rate is %.2f%%%n", (100 * interestRate));
-        System.out.printf(GREEN + "After %d years, your balance will be: R%.2f%n" + RESET, years, newBalance);
-        System.out.println(YELLOW + "After " + years + " the profit will be " + profit);
+    @Override
+    public String toString() {
+        return String.format("%s[number=%s, owner=%s, balance=R%.2f]",
+                getClass().getSimpleName(), accountNumber, ownerName, balance);
     }
 }
